@@ -62,7 +62,7 @@ public class PlatformSupport {
     }
 
     public static boolean isWin32() {
-        return (ARCH.indexOf("x86") >= 0);
+        return (ARCH.indexOf("x86") >= 0 || ARCH.indexOf("amd64") >= 0);
     }
 
     public static boolean isI386() {

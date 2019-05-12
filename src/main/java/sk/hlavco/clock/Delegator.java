@@ -1,6 +1,7 @@
 package sk.hlavco.clock;
 
 import sk.hlavco.rele.OvladanieRele;
+import sk.hlavco.rele.PropertyFile;
 
 public class Delegator {
 
@@ -9,4 +10,6 @@ public class Delegator {
     }
 
     public Procesy getProcesy() {return new Procesy(); }
+
+    public PropertyFile getPropertyFile() {return new PropertyFile(); }
 }

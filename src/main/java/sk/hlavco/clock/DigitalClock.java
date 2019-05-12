@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeListener;
 import java.text.DateFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -13,6 +14,10 @@ import java.util.Date;
     public class DigitalClock {
 
         public static void main(String[] arguments) {
+
+            final java.util.Timer[] mainMinuteTimer = {null};
+
+            Delegator dlg = new Delegator();
 
             ClockLabel dateLable = new ClockLabel("date");
             ClockLabel timeLable = new ClockLabel("time");
@@ -33,8 +38,91 @@ import java.util.Date;
             input.setValue(new Date());
             input.setColumns(20);
 
-            f.add(input);
+//            f.add(input);
 
+            JButton btnStartTime = new JButton("Startuj");
+            btnStartTime.addActionListener(new Action() {
+
+                @Override
+                public Object getValue(String key) {
+                    return null;
+                }
+
+                @Override
+                public void putValue(String key, Object value) {
+
+                }
+
+                @Override
+                public void setEnabled(boolean b) {
+
+                }
+
+                @Override
+                public boolean isEnabled() {
+                    return false;
+                }
+
+                @Override
+                public void addPropertyChangeListener(PropertyChangeListener listener) {
+
+                }
+
+                @Override
+                public void removePropertyChangeListener(PropertyChangeListener listener) {
+
+                }
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                   mainMinuteTimer[0] = dlg.getProcesy().procesSekundovy();
+
+
+                }
+            });
+
+            f.add(btnStartTime);
+
+            JButton btnStopTime = new JButton("Stopni");
+            btnStopTime.addActionListener(new Action() {
+                @Override
+                public Object getValue(String key) {
+                    return null;
+                }
+
+                @Override
+                public void putValue(String key, Object value) {
+
+                }
+
+                @Override
+                public void setEnabled(boolean b) {
+
+                }
+
+                @Override
+                public boolean isEnabled() {
+                    return false;
+                }
+
+                @Override
+                public void addPropertyChangeListener(PropertyChangeListener listener) {
+
+                }
+
+                @Override
+                public void removePropertyChangeListener(PropertyChangeListener listener) {
+
+                }
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    mainMinuteTimer[0].cancel();
+                }
+            });
+
+            f.add(btnStopTime);
+            ////
             f.getContentPane().setBackground(Color.black);
 
             f.setVisible(true);
@@ -80,7 +168,7 @@ import java.util.Date;
             setText(sdf.format(d));
 
             System.out.println(sdf.format(d));
-            dlg.getOvladanieRele().stukajRelatkami();
+//            dlg.getOvladanieRele().stukajRelatkami();
         }
     }
 

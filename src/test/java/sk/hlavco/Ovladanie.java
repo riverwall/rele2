@@ -50,7 +50,7 @@ public class Ovladanie {
                     Thread.sleep(400);
                 }
 
-                //MAJO
+                //MAJO, majo
 
                 //close relay
                 manager.closeRelay(handler);

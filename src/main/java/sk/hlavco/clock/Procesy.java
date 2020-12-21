@@ -24,19 +24,16 @@ public class Procesy {
 
     public static void main(String[] args){
 
-        new Procesy().procesSekundovy();
+        UsbRelayDeviceHandler handler = null;
+        new Procesy().processWithParam(handler, 1000);
     }
 
-    public Timer procesSekundovy() {
+    public Timer processWithParam(final UsbRelayDeviceHandler handler, int period) {
 
         LOGGER.log(Level.INFO, "sekundovy proces bezi");
 
-
-
-        //otvor kartu
-//        UsbRelayDeviceHandler handler = dlg.getOvladanieRele().openDevice();
-
         TimerTask task = new TimerTask() {
+
             @Override
             public void run() {
 
@@ -51,21 +48,23 @@ public class Procesy {
                     throw new IndexOutOfBoundsException();
                 }
 
-//                boolean uspesnyImpulz = dlg.getOvladanieRele().impulz(handler, indexRele);\
-                boolean uspesnyImpulz = true;
+                boolean uspesnyImpulz = dlg.getOvladanieRele().impulz(handler, indexRele);
+//                boolean uspesnyImpulz = true;
 
 
                 if(uspesnyImpulz) {
                     dlg.getPropertyFile().savePosledneReleToPropsFile(indexRele);
                 }
             }
-        };
-        timerSekundovy.schedule(task, new Date(), 1000);
 
-        //odpoj kartu
-//        dlg.getOvladanieRele().closeDevice(handler);
+        };
+        timerSekundovy.schedule(task, new Date(), period);
 
         return timerSekundovy;
+    }
+
+    public void closeDevice(UsbRelayDeviceHandler handler){
+        dlg.getOvladanieRele().closeDevice(handler);
     }
 
 }

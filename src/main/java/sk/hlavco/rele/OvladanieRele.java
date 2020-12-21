@@ -1,8 +1,17 @@
 package sk.hlavco.rele;
 
 import by.creepid.jusbrelay.*;
+import sk.hlavco.clock.Delegator;
+import sk.hlavco.clock.DigitalClock;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class OvladanieRele{
+
+    static final Logger LOGGER = Logger.getLogger( DigitalClock.class.getName() );
+    static Delegator dlg = new Delegator();
+
 
     public UsbRelayDeviceHandler openDevice() {
 
@@ -43,45 +52,31 @@ public class OvladanieRele{
         }
     }
 
-    public boolean impulzSInicializaciou(int indexRele) throws UsbRelayException, InterruptedException {
+    public void impulzSInicializaciou()  {
 
-        UsbRelayManager manager = NativeUsbRelayManager.getInstance();
-        try {
-            //init manager
-            manager.relayInit();
-            //enumerate devices
-            UsbRelayDeviceInfo[] devices = manager.deviceEnumerate();
+        UsbRelayDeviceHandler handler = null;
+        handler = openDevice();
 
-            if (devices == null || devices.length <= 0) {
-                return false;
-            }
+        int indexRele = 9;
 
-            UsbRelayDeviceInfo usbRelayDeviceInfo = devices[0];
-            //retrieve device handler
-            UsbRelayDeviceHandler handler = manager.deviceOpen(usbRelayDeviceInfo.getSerialNumber());
+        indexRele = dlg.getPropertyFile().readPosledneReleFromPropertiesFile();
 
-            manager.openRelayChannel(handler, 0);
-
-            Thread.sleep(200);
-
-            manager.closeRelayChannel(handler, 0);
-
-            manager.closeRelay(handler);
-
-            return true;
-
-        } catch (UsbRelayException ex) {
-            ex.printStackTrace();
-            return false;
-
-        } finally {
-        //close manager
-        try {
-            manager.relayExit();
-        } catch (UsbRelayException e) {
-            e.printStackTrace();
+        if(indexRele == 0){
+            indexRele = 1;
+        } else if (indexRele == 1){
+            indexRele = 0;
+        } else {
+            LOGGER.log(Level.INFO, "chyba v indexe rele");
+            throw new IndexOutOfBoundsException();
         }
-    }
+
+        boolean uspesnyImpulz = dlg.getOvladanieRele().impulz(handler, indexRele);
+
+        if(uspesnyImpulz) {
+            dlg.getPropertyFile().savePosledneReleToPropsFile(indexRele);
+        }
+
+        dlg.getOvladanieRele().closeDevice(handler);
     }
 
     public boolean impulz(UsbRelayDeviceHandler handler, int indexRele){

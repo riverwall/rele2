@@ -1,5 +1,8 @@
 package sk.hlavco.clock;
 
+import by.creepid.jusbrelay.UsbRelayDeviceHandler;
+import by.creepid.jusbrelay.UsbRelayException;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -9,15 +12,30 @@ import java.text.DateFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
-    public class DigitalClock {
+public class DigitalClock {
+
+        private static final Logger LOGGER = Logger.getLogger( DigitalClock.class.getName() );
+
+        static  UsbRelayDeviceHandler handlerGlobal = null;
+        static java.util.Timer[] mainMinuteTimer = {null};
+        static  Delegator dlg = new Delegator();
+
+        public static void startTimer() {
+            //otvor kartu
+            handlerGlobal = dlg.getOvladanieRele().openDevice();
+            mainMinuteTimer[0] = dlg.getProcesy().processWithParam(handlerGlobal, 60000);
+        }
+
+        public static void stopTimer() {
+            mainMinuteTimer[0].cancel();
+            dlg.getProcesy().closeDevice(handlerGlobal);
+        }
 
         public static void main(String[] arguments) {
-
-            final java.util.Timer[] mainMinuteTimer = {null};
-
-            Delegator dlg = new Delegator();
 
             ClockLabel dateLable = new ClockLabel("date");
             ClockLabel timeLable = new ClockLabel("time");
@@ -25,7 +43,7 @@ import java.util.Date;
 
             JFrame.setDefaultLookAndFeelDecorated(true);
             JFrame f = new JFrame("Digital Clock");
-            f.setSize(300,150);
+            f.setSize(500,250);
             f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             f.setLayout(new GridLayout(4, 1));
 
@@ -75,9 +93,7 @@ import java.util.Date;
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                   mainMinuteTimer[0] = dlg.getProcesy().procesSekundovy();
-
-
+                    startTimer();
                 }
             });
 
@@ -117,11 +133,52 @@ import java.util.Date;
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    mainMinuteTimer[0].cancel();
+                  stopTimer();
                 }
             });
 
             f.add(btnStopTime);
+
+            JButton btnSingleImpulz = new JButton("Impulz po sekunde");
+            btnSingleImpulz.addActionListener(new Action() {
+                @Override
+                public Object getValue(String key) {
+                    return null;
+                }
+
+                @Override
+                public void putValue(String key, Object value) {
+
+                }
+
+                @Override
+                public void setEnabled(boolean b) {
+
+                }
+
+                @Override
+                public boolean isEnabled() {
+                    return false;
+                }
+
+                @Override
+                public void addPropertyChangeListener(PropertyChangeListener listener) {
+
+                }
+
+                @Override
+                public void removePropertyChangeListener(PropertyChangeListener listener) {
+
+                }
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    dlg.getOvladanieRele().impulzSInicializaciou();
+                };
+            });
+
+
+            f.add(btnSingleImpulz);
             ////
             f.getContentPane().setBackground(Color.black);
 
@@ -138,24 +195,27 @@ import java.util.Date;
 
         public ClockLabel(String type) {
             this.type = type;
+
             setForeground(Color.green);
 
-            switch (type) {
-                case "date" : sdf = new SimpleDateFormat("  MMMM dd yyyy");
-                    setFont(new Font("sans-serif", Font.PLAIN, 12));
-                    setHorizontalAlignment(SwingConstants.LEFT);
-                    break;
-                case "time" : sdf = new SimpleDateFormat("hh:mm:ss a");
-                    setFont(new Font("sans-serif", Font.PLAIN, 40));
-                    setHorizontalAlignment(SwingConstants.CENTER);
-                    break;
-                case "day"  : sdf = new SimpleDateFormat("EEEE  ");
-                    setFont(new Font("sans-serif", Font.PLAIN, 16));
-                    setHorizontalAlignment(SwingConstants.RIGHT);
-                    break;
+            if ("date".equals(type)) {
+                sdf = new SimpleDateFormat("  MMMM dd yyyy");
+                setFont(new Font("sans-serif", Font.PLAIN, 12));
+                setHorizontalAlignment(SwingConstants.LEFT);
 
-                default     : sdf = new SimpleDateFormat();
-                    break;
+            } else if ("time".equals(type)) {
+                sdf = new SimpleDateFormat("hh:mm:ss a");
+                setFont(new Font("sans-serif", Font.PLAIN, 40));
+                setHorizontalAlignment(SwingConstants.CENTER);
+
+            } else if ("day".equals(type)) {
+                sdf = new SimpleDateFormat("EEEE  ");
+                setFont(new Font("sans-serif", Font.PLAIN, 16));
+                setHorizontalAlignment(SwingConstants.RIGHT);
+
+            } else {
+                sdf = new SimpleDateFormat();
+
             }
 
             Timer t = new Timer(1000, this);
